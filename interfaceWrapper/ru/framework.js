@@ -8,24 +8,31 @@ var context = {
   module: {},
   console: console,
   // Помещаем ссылку на fs API в песочницу
-  fs: fs,
-  // Оборачиваем функцию setTimeout в песочнице
-  setTimeout: function(callback, timeout) {
-    // Добавляем поведение при вызове setTimeout
-    console.log(
-      'Call: setTimeout, ' +
-      'callback function: ' + callback.name + ', ' +
-      'timeout: ' + timeout
-    );
-    setTimeout(function() {
-      // Добавляем поведение при срабатывании таймера
-      console.log('Event: setTimeout, before callback');
-      // Вызываем функцию пользователя на событии таймера
-      callback();
-      console.log('Event: setTimeout, after callback');
-    }, timeout);
-  }
+  fs: cloneInterface(fs)
 };
+
+//функция клонирования интерфейса
+function cloneInterface(anInterface) {
+  var clone = {};
+  for (var key in anInterface) {
+    clone[key] = wrapFunction(key, anInterface[key]);
+  }
+  return clone;
+}
+//обертка
+function wrapFunction(fnName, fn) {
+  return function wrapper() {
+    var args = [];
+    Array.prototype.push.apply(args, arguments);
+    var mycallback = arguments[arguments.length -1];
+    if ( typeof mycallback === 'function'){
+      args[args.length -1] = wrapFunction(fnName, mycallback);
+    }
+    console.log('Call: ' + fnName);
+    console.dir(args);
+    return fn.apply(undefined, args);
+  }
+}
 
 // Преобразовываем хеш в контекст
 context.global = context;
