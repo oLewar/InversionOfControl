@@ -3,9 +3,15 @@
 // кусочком фреймворка. Читайте README.md в нем задания.
 
 // Вывод из глобального контекста модуля
+
 console.log('From application global context');
 
 module.exports = function() {
   // Вывод из контекста экспортируемой функции
-  console.log('From application exported function');
+  var foo = function () {
+    debuglog = util.isFunction (foo);
+    console.log('From application exported function isfunction? - ' + debuglog);
+  };
+//  return foo();
+  setTimeout(foo, 1000);
 };
