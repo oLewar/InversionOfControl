@@ -4,27 +4,59 @@
 // приложением интерфейс. Читайте README.md в нем задания.
 
 // Фреймворк может явно зависеть от библиотек через dependency lookup
-var fs = require('fs'),
+const fs = require('fs'),
     vm = require('vm'),
     util = require('util');
+
+//обертка console.log()
+
+let Logger = {};
+Logger.log = function () {
+    if (console && console.log) {
+        try {
+            let now = new Date();
+            console.log.apply(console, [fileName + ' ' + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds()+":"+ now.getMilliseconds()].concat([].slice.call(arguments)));
+        } catch (e) {
+            console.log(Array.slice(arguments))
+        }
+    }
+};
+//обертка required
+let LoggerReq = function (name) {
+    if (require) {
+        try {
+            let now = new Date();
+            console.log( name + ' ' + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds()+":"+ now.getMilliseconds());
+        } catch (e) {
+            console.log(Array.slice(arguments))
+        }
+    }
+};
+
+
+// Читаем исходный код приложения из файла - вызов node framework <applicationName>
+let fileName = '';
+if (process.argv[2]) {
+    fileName = process.argv[2];
+}
 // Создаем контекст-песочницу, которая станет глобальным контекстом приложения
-var context = {
+let context = {
                 module: {},
-                console: console,
+                console: Logger,
                 setTimeout: setTimeout,
                 setInterval: setInterval,
-                util: util
+                util: util,
+                require: LoggerReq
+
 };
 context.global = context;
-var sandbox = vm.createContext(context);
+let sandbox = vm.createContext(context);
 
-// Читаем исходный код приложения из файла
-var fileName = './application.js';
 fs.readFile(fileName, function(err, src) {
   // Тут нужно обработать ошибки
-  
+
   // Запускаем код приложения в песочнице
-  var script = vm.createScript(src, fileName);
+  let script = vm.createScript(src, fileName);
   script.runInNewContext(sandbox);
   sandbox.module.exports();
   // Забираем ссылку из sandbox.module.exports, можем ее исполнить,
